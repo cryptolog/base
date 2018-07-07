@@ -1,24 +1,24 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
-// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2015-2017 The BASE developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "primitives/block.h"
 
 #include "hash.h"
-#include "script/standard.h"
 #include "script/sign.h"
+#include "script/standard.h"
 #include "tinyformat.h"
-#include "utilstrencodings.h"
 #include "util.h"
+#include "utilstrencodings.h"
 
 uint256 CBlockHeader::GetHash() const
 {
-    if(nVersion < 4)
+    if (nVersion < 4)
         return HashQuark(BEGIN(nVersion), END(nNonce));
 
-    return Hash(BEGIN(nVersion), END(nAccumulatorCheckpoint));
+    return HashQuark(BEGIN(nVersion), END(nAccumulatorCheckpoint));
 }
 
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const
@@ -64,17 +64,15 @@ uint256 CBlock::BuildMerkleTree(bool* fMutated) const
         vMerkleTree.push_back(it->GetHash());
     int j = 0;
     bool mutated = false;
-    for (int nSize = vtx.size(); nSize > 1; nSize = (nSize + 1) / 2)
-    {
-        for (int i = 0; i < nSize; i += 2)
-        {
-            int i2 = std::min(i+1, nSize-1);
-            if (i2 == i + 1 && i2 + 1 == nSize && vMerkleTree[j+i] == vMerkleTree[j+i2]) {
+    for (int nSize = vtx.size(); nSize > 1; nSize = (nSize + 1) / 2) {
+        for (int i = 0; i < nSize; i += 2) {
+            int i2 = std::min(i + 1, nSize - 1);
+            if (i2 == i + 1 && i2 + 1 == nSize && vMerkleTree[j + i] == vMerkleTree[j + i2]) {
                 // Two identical hashes at the end of the list at a particular level.
                 mutated = true;
             }
-            vMerkleTree.push_back(Hash(BEGIN(vMerkleTree[j+i]),  END(vMerkleTree[j+i]),
-                                       BEGIN(vMerkleTree[j+i2]), END(vMerkleTree[j+i2])));
+            vMerkleTree.push_back(Hash(BEGIN(vMerkleTree[j + i]), END(vMerkleTree[j + i]),
+                BEGIN(vMerkleTree[j + i2]), END(vMerkleTree[j + i2])));
         }
         j += nSize;
     }
@@ -90,10 +88,9 @@ std::vector<uint256> CBlock::GetMerkleBranch(int nIndex) const
         BuildMerkleTree();
     std::vector<uint256> vMerkleBranch;
     int j = 0;
-    for (int nSize = vtx.size(); nSize > 1; nSize = (nSize + 1) / 2)
-    {
-        int i = std::min(nIndex^1, nSize-1);
-        vMerkleBranch.push_back(vMerkleTree[j+i]);
+    for (int nSize = vtx.size(); nSize > 1; nSize = (nSize + 1) / 2) {
+        int i = std::min(nIndex ^ 1, nSize - 1);
+        vMerkleBranch.push_back(vMerkleTree[j + i]);
         nIndex >>= 1;
         j += nSize;
     }
@@ -103,9 +100,8 @@ std::vector<uint256> CBlock::GetMerkleBranch(int nIndex) const
 uint256 CBlock::CheckMerkleBranch(uint256 hash, const std::vector<uint256>& vMerkleBranch, int nIndex)
 {
     if (nIndex == -1)
-		return uint256();
-    for (std::vector<uint256>::const_iterator it(vMerkleBranch.begin()); it != vMerkleBranch.end(); ++it)
-    {
+        return uint256();
+    for (std::vector<uint256>::const_iterator it(vMerkleBranch.begin()); it != vMerkleBranch.end(); ++it) {
         if (nIndex & 1)
             hash = Hash(BEGIN(*it), END(*it), BEGIN(hash), END(hash));
         else
@@ -125,8 +121,7 @@ std::string CBlock::ToString() const
         hashMerkleRoot.ToString(),
         nTime, nBits, nNonce,
         vtx.size());
-    for (unsigned int i = 0; i < vtx.size(); i++)
-    {
+    for (unsigned int i = 0; i < vtx.size(); i++) {
         s << "  " << vtx[i].ToString() << "\n";
     }
     s << "  vMerkleTree: ";
